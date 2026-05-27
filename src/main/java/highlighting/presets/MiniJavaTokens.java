@@ -1,4 +1,4 @@
-    package highlighting.presets;
+package highlighting.presets;
 
 import highlighting.regex.Token;
 import java.util.List;
