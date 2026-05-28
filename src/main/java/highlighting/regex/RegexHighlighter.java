@@ -5,7 +5,6 @@ import highlighting.core.SyntaxHighlighter;
 import highlighting.presets.MiniJavaTokens;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 
 public class RegexHighlighter extends SyntaxHighlighter {
 
@@ -13,12 +12,7 @@ public class RegexHighlighter extends SyntaxHighlighter {
   public List<HighlightRegion> collectMatches(String text) {
     List<HighlightRegion> result = new ArrayList<>();
     for (Token token : MiniJavaTokens.defaultTokens()) {
-      Matcher m = token.pattern().matcher(text);
-      while (m.find()) {
-        int start = m.start();
-        int end = m.end();
-        result.add(new HighlightRegion(start, end, token.colour()));
-      }
+      result.addAll(token.test(text));
     }
     return result;
   }
