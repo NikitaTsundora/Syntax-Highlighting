@@ -2,35 +2,88 @@ package highlighting.antlr;
 
 import highlighting.core.HighlightRegion;
 import highlighting.core.SyntaxHighlighter;
+import highlighting.presets.MiniJavaColours;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.*;
 
-// TODO Phase III — AntlrTokenCollector (token-based syntax highlighting).
-
-// This highlighter uses the ANTLR-generated MiniJavaLexer to turn the input text into a token
-// stream. {@code collectMatches(String)} is the only method you need to implement: extract tokens
-// of interest and map them to {@code HighlightRegions} using the colours from {@code
-// MiniJavaColours}. Sorting, filtering of invalid regions, and conflict handling are performed by
-// the base class {@code SyntaxHighlighter} via the template method {@code computeRegions(...)}.
 public class AntlrTokenCollector extends SyntaxHighlighter {
 
-  // TODO (Phase III — implement this method): Use the token stream produced by the ANTLR-generated
-  // {@code MiniJavaLexer} to collect highlight regions.
-  //
-  // Requirements / hints:
-  // - Iterate over the lexer tokens (typically via {@code CommonTokenStream}); ignore the EOF
-  // token.
-  // - For each token type that should be coloured (e.g., keywords, string/char literals, comments),
-  // create a {@code HighlightRegion} with the corresponding colour from {@code MiniJavaColours}.
-  // - Use {@code Token#getStartIndex()} and {@code Token#getStopIndex()} (inclusive) to compute
-  // {@code [start, end)} ranges: {@code start = startIndex, end = stopIndex + 1}.
-  // - Do not sort, merge, or resolve overlaps here; return all candidates as you find them.
-  // Normalisation and conflict resolution are handled later by the template method.
-  // - Annotation highlighting: colour '@' and the immediately following IDENTIFIER token (if
-  // present).
   @Override
   public List<HighlightRegion> collectMatches(String text) {
-    throw new UnsupportedOperationException("not implemented yet");
+
+    List<HighlightRegion> regions = new ArrayList<>();
+
+    MiniJavaLexer lexer = new MiniJavaLexer(CharStreams.fromString(text));
+    CommonTokenStream stream = new CommonTokenStream(lexer);
+    stream.fill();
+    List<Token> tokens = stream.getTokens();
+
+    for (int i = 0; i < tokens.size(); i++) {
+      Token t = tokens.get(i);
+
+      if (t.getType() == Token.EOF) {
+        continue;
+      }
+
+      if (t.getType() == MiniJavaLexer.AT) {
+        regions.add(
+            new HighlightRegion(
+                t.getStartIndex(), t.getStopIndex() + 1, MiniJavaColours.ANNOTATION_COLOUR));
+        if (i + 1 < tokens.size()) {
+          Token next = tokens.get(i + 1);
+          if (next.getType() == MiniJavaLexer.IDENTIFIER) {
+            regions.add(
+                new HighlightRegion(
+                    next.getStartIndex(),
+                    next.getStopIndex() + 1,
+                    MiniJavaColours.ANNOTATION_COLOUR));
+          }
+        }
+
+        continue;
+      }
+
+      Color c = colourFor(t);
+      if (c != null) {
+        regions.add(new HighlightRegion(t.getStartIndex(), t.getStopIndex() + 1, c));
+      }
+    }
+
+    return regions;
+  }
+
+  private Color colourFor(Token t) {
+    int type = t.getType();
+
+    // Keywords
+    switch (type) {
+      case MiniJavaLexer.PACKAGE:
+      case MiniJavaLexer.IMPORT:
+      case MiniJavaLexer.CLASS:
+      case MiniJavaLexer.PUBLIC:
+      case MiniJavaLexer.PRIVATE:
+      case MiniJavaLexer.FINAL:
+      case MiniJavaLexer.RETURN:
+      case MiniJavaLexer.NULL:
+      case MiniJavaLexer.NEW:
+      case MiniJavaLexer.IF:
+      case MiniJavaLexer.ELSE:
+      case MiniJavaLexer.WHILE:
+      case MiniJavaLexer.EXTENDS:
+      case MiniJavaLexer.IMPLEMENTS:
+        return MiniJavaColours.KEYWORD_COLOUR;
+    }
+
+    // Literale
+    if (type == MiniJavaLexer.STRING_LITERAL) return MiniJavaColours.STRING_LITERAL_COLOUR;
+    if (type == MiniJavaLexer.CHAR_LITERAL) return MiniJavaColours.CHAR_LITERAL_COLOUR;
+
+    // Kommentare
+    if (type == MiniJavaLexer.LINE_COMMENT) return MiniJavaColours.LINE_COMMENT_COLOUR;
+    if (type == MiniJavaLexer.BLOCK_COMMENT) return MiniJavaColours.BLOCK_COMMENT_COLOUR;
+    if (type == MiniJavaLexer.JAVADOC_COMMENT) return MiniJavaColours.JAVADOC_COMMENT_COLOUR;
+    return null;
   }
 }

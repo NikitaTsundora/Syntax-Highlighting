@@ -10,17 +10,17 @@ public class Main {
 
   public static void main(String... args) {
     // Phase I: RegexHighlighter
-    SyntaxHighlighter regex = new RegexHighlighter();
+    // SyntaxHighlighter regex = new RegexHighlighter();
 
     // Phase II: ScanningHighlighter
     // SyntaxHighlighter scanning = new ScanningHighlighter();
 
     // Phase III: AntlrTokenCollector (tokenbasiert)
-    // SyntaxHighlighter antlrToken = new AntlrTokenCollector();
+    SyntaxHighlighter antlrToken = new AntlrTokenCollector();
 
     // and go ...
-    EditorUI.show(Texts.START_TEXT, regex);
+    // EditorUI.show(Texts.START_TEXT, regex);
     // EditorUI.show(Texts.START_TEXT, scanning);
-    // EditorUI.show(Texts.START_TEXT, antlrToken);
+    EditorUI.show(Texts.START_TEXT, antlrToken);
   }
 }

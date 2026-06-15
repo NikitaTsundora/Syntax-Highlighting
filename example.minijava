@@ -1,0 +1,21 @@
+class Nested {
+  int state;
+
+  void compute() {
+    {
+      state = init;
+
+      if (state == ready) {
+        {
+          state = running;
+        }
+      }
+
+      while (state != done) {
+        {
+          state = next;
+        }
+      }
+    }
+  }
+}
